@@ -8,10 +8,3 @@
 # # Teste
 # resultado = contar_ocorrencias("abracadabra")
 # print(resultado)
-
-def contar_ocorrencias(palavra):
-    cont = 0
-    dict =  {}
-    for letra in palavra:
-    # verificar se a letrra esta no dicionatrio como chave, se estiver, adiciona 1 no valor correpondente
-    # se nao, adiciona a nova chave e o valor 1.
