@@ -184,6 +184,3 @@ for (filme, diretor) in dDiretores.items():
     if diretor not in novodDiretores:
         novodDiretores[diretor]=[]
     novodDiretores[diretor].append(filme)
-    print(novodDiretores)
-
-print(novodDiretores)

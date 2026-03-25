@@ -52,3 +52,6 @@ Métodos importantes
 
 posição → lista
 chave → dicionário
+
+Cria um dicionário de frequência
+frequencia = Counter(itens)
