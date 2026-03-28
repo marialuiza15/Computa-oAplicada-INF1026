@@ -13,8 +13,31 @@ e tGregoMinMai. Para cada caracter desta palavra com correspondência no alfabet
           o -- min: o   mai: Ο  nome:ômicron
 ''' 
 
-def tradução(palavra,d1,d2,d3):
-    pass
+def tradução(palavra,tGregoMaiNome,tLatinoGregoMinusculo,tGregoMinMai):
+    #converte as tuplas em dicionarios pára busca rapida
+    latino_para_grego_min = dict(tLatinoGregoMinusculo)
+    grego_min_para_mai = dict(tGregoMinMai)
+    grego_mai_para_nome = dict(tGregoMaiNome)
+
+    resultado = {}
+
+    for letra in palavra:
+        if letra in latino_para_grego_min:
+            gregomin = latino_para_grego_min.get(letra, "letra minuscula desconhecida")
+            if gregomin in grego_min_para_mai:
+                gregomai = grego_min_para_mai.get(gregomin, "letra maiuscula desconhecido")
+                nome = grego_mai_para_nome.get(gregomai,"nome desconhecido")
+                resultado.update({
+                    letra: {'minusculo': gregomin, 'maisculo': gregomai, 'nome':nome}
+                })
+        else:
+            resultado.update({
+                letra: "sem correspondencia"
+            })
+        
+            
+    return resultado
+
     
 tGregoMaiNome=(('Α','alfa'),('B','beta'),('Γ','gama'),('Δ','delta'),
                ('Ε','épsilon'),('Ζ','dzeta'),('Η','eta'),('Θ','teta'),
@@ -37,3 +60,4 @@ tGregoMinMai=(('α','Α'),('β','B'),('γ','Γ'),('δ','Δ'),
               ('φ','Φ'),('χ','Χ'),('ψ','Ψ'),('ω','Ω'))
 
 
+print(tradução('malu',tGregoMaiNome,tLatinoGregoMinusculo,tGregoMinMai))
