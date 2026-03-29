@@ -55,3 +55,10 @@ chave → dicionário
 
 Cria um dicionário de frequência
 frequencia = Counter(itens)
+
+Você pode usar essas tuplas como chave em um dicionário:
+
+d = {}
+for t in tupla_de_tuplas:
+    d[t] = "valor qualquer"
+print(d[('e', 'f')])
