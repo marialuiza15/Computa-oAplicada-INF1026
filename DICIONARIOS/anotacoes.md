@@ -62,3 +62,85 @@ d = {}
 for t in tupla_de_tuplas:
     d[t] = "valor qualquer"
 print(d[('e', 'f')])
+
+modelo padrão (simples e correto) para inverter chave e valor de um dicionário
+def inverter_dict(d):
+    novo_dict = {}
+
+    for chave, valor in d.items():
+        novo_dict[valor] = chave
+
+    return novo_dic
+
+
+d = {'a': 1, 'b': 2, 'c': 3}
+invertido = inverter_dict(d)
+print(invertido)
+{1: 'a', 2: 'b', 3: 'c'}
+
+
+SETDEFAULT
+d.setdefault('a', [])
+- o valor padrão só é usado se a chave NÃO existir
+- se já existir, ele ignora completamente o valor passado
+
+SETDEFAULT COM INTEIROS
+def contar_palavras(lista):
+    d = {}
+    for palavra in lista:
+        d[palavra] = d.setdefault(palavra, 0) + 1
+
+    return d
+
+SETDEFAULT COM LISTAS
+def inverter_jogadores_por_jogo(jogadores):
+    novo_dict = {}
+
+    for id_player, (idJogo, rank) in jogadores.items():
+        novo_dict.setdefault(idJogo, []).append(id_player)
+
+    return novo_dict
+
+
+SETDEFAULT COM STRINGS
+d = {}
+
+d.setdefault('nome', 'desconhecido')
+print(d)
+
+
+SETDEFAULT COM DICIONARIOS EM DICIONARIOS
+d = {}
+
+d.setdefault('usuario1', {}).setdefault('idade', 0)
+
+print(d)
+
+SETDEFAULT COM LISTA DENTRO DE DICIONARIOS
+d = {}
+
+d.setdefault('grupo', []).append(1)
+d.setdefault('grupo', []).append(2)
+
+print(d)
+
+
+
+Remover duplicados COM SET
+lista = [1, 2, 2, 3, 3, 3]
+sem_repeticao = set(lista)
+
+print(sem_repeticao)
+
+Evitar duplicatas ao agrupar
+d = {}
+
+dados = [('a', 1), ('a', 1), ('a', 2)]
+
+for chave, valor in dados:
+    d.setdefault(chave, set()).add(valor)
+
+print(d)
+
+Saída:
+{'a': {1, 2}}
