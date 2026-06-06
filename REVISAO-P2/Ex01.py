@@ -367,9 +367,18 @@ print('==============================================')
 # #        Ordene o resultado pela maior média de consultas_medicas (decrescente).
 # # -----------------------------------------------------------------------------
 
-# print('\nD1.a — Produção assistencial por modalidade e porte')
+print('\nD1.a — Produção assistencial por modalidade e porte')
+# SEU CÓDIGO AQUI
+dfCompleto = pd.concat([dfUnidade, dfAtendimento], axis=1)
 
-# # SEU CÓDIGO AQUI
+dfAgrupado = dfCompleto.groupby('modalidade').agg({
+    'consultas_medicas': 'mean', 
+    'cobertura_pct': 'mean',
+    'visitas_domiciliares': 'sum',
+    'procedimentos_odonto': 'max'
+    })
+
+print(dfAgrupado.sort_values(by='consultas_medicas', ascending=False))
 
 
 # # -----------------------------------------------------------------------------
@@ -382,10 +391,15 @@ print('==============================================')
 # #        Tudo em um único .agg(). Exiba o resultado.
 # # -----------------------------------------------------------------------------
 
-# print('\nD1.b — Estatísticas de atendimento por região')
+print('\nD1.b — Estatísticas de atendimento por região')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+dfAgrup = dfCompleto.groupby('regiao').agg({
+    'consultas_medicas': ['count','mean'],
+    'cobertura_pct': ['mean','min','max']
+})
 
+print(dfAgrup)
 
 # # -----------------------------------------------------------------------------
 # # D1.c) Com dfCompleto, mostre — por MODALIDADE — quantas UBS possuem
@@ -393,18 +407,22 @@ print('==============================================')
 # #        Use groupby + apply com função lambda que filtra e conta.
 # # -----------------------------------------------------------------------------
 
-# print('\nD1.c — Quantas UBS com cobertura > 50% por modalidade')
+print('\nD1.c — Quantas UBS com cobertura > 50% por modalidade')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+df = dfCompleto.groupby('modalidade')['cobertura_pct'].apply(lambda x: (x>50).sum())
+# tambem funciona fazer:
+# df = dfCompleto[dfCompleto['cobertura_pct']>50].groupby('modalidade').size()
 
+print(df)
 
 # # =============================================================================
 # # EXERCÍCIO D2 — pd.cut com labels e análise cruzada
 # # =============================================================================
 
-# print('\n==============================================')
-# print('D2 — pd.cut com labels e análise cruzada')
-# print('==============================================')
+print('\n==============================================')
+print('D2 — pd.cut com labels e análise cruzada')
+print('==============================================')
 
 # # -----------------------------------------------------------------------------
 # # D2.a) Em dfGestao, crie a coluna FaixaAbsenteismo classificando
