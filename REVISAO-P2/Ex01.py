@@ -435,10 +435,20 @@ print('==============================================')
 # #        Mostre a frequência absoluta de cada faixa.
 # # -----------------------------------------------------------------------------
 
-# print('\nD2.a — Coluna FaixaAbsenteismo com pd.cut')
+print('\nD2.a — Coluna FaixaAbsenteismo com pd.cut')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+limites = [0,8,16,25,40]
+titulos = ['Absenteísmo baixo', 
+           'Absenteísmo moderado', 
+           'Absenteísmo elevado', 
+           'ExceleAbsenteísmo críticonte']
 
+dfGestao['FaixaAbsenteismo'] = pd.cut(dfGestao['absenteismo_pct'], bins=limites, labels=titulos)
+
+freq_abs = dfGestao['FaixaAbsenteismo'].value_counts()
+
+print(freq_abs)
 
 # # -----------------------------------------------------------------------------
 # # D2.b) Faça um pd.crosstab entre FaixaAbsenteismo e prontuario_eletronico
@@ -449,10 +459,15 @@ print('==============================================')
 # #        Multiplique por 100 para exibir em percentual.
 # # -----------------------------------------------------------------------------
 
-# print('\nD2.b — Crosstab FaixaAbsenteismo x prontuario_eletronico (absoluto e %)')
+print('\nD2.b — Crosstab FaixaAbsenteismo x prontuario_eletronico (absoluto e %)')
+# SEU CÓDIGO AQUI
+tab_crosstab = pd.crosstab(dfGestao['FaixaAbsenteismo'], dfGestao['prontuario_eletronico'], margins=True,margins_name='Total')
 
-# # SEU CÓDIGO AQUI
+outro_crosstab = pd.crosstab(dfGestao['FaixaAbsenteismo'], dfGestao['prontuario_eletronico'], margins=True,margins_name='Total',normalize='index')
 
+outro_crosstab = outro_crosstab*100 # funções simples nao precisa de aply, é só fazer direto
+
+print(outro_crosstab)
 
 # # -----------------------------------------------------------------------------
 # # D2.c) Mostre a média de absenteismo_pct agrupada por:
@@ -461,18 +476,22 @@ print('==============================================')
 # #        Interprete em um print qual combinação apresenta o maior absenteísmo médio.
 # # -----------------------------------------------------------------------------
 
-# print('\nD2.c — Absenteísmo médio: abastecimento regular x equipe incompleta')
+print('\nD2.c — Absenteísmo médio: abastecimento regular x equipe incompleta')
+# SEU CÓDIGO AQUI
+df = dfGestao.groupby(['abastecimento_regular','equipe_incompleta']).agg({'absenteismo_pct':'mean'})
 
-# # SEU CÓDIGO AQUI
+df = df.sort_values(by='absenteismo_pct', ascending=False)
+
+print(df)
 
 
 # # =============================================================================
 # # EXERCÍCIO D3 — Filtro por índice com .str e análise de subgrupo
 # # =============================================================================
 
-# print('\n==============================================')
-# print('D3 — Filtro por índice com .str e análise de subgrupo')
-# print('==============================================')
+print('\n==============================================')
+print('D3 — Filtro por índice com .str e análise de subgrupo')
+print('==============================================')
 
 # # -----------------------------------------------------------------------------
 # # D3.a) Em dfUnidade, use o ÍNDICE (ubs_id) para filtrar as UBS da
@@ -486,10 +505,18 @@ print('==============================================')
 # #          - a frequência de modalidade em dfCO
 # # -----------------------------------------------------------------------------
 
-# print('\nD3.a — Subgrupo Centro-Oeste: porte e modalidade')
+print('\nD3.a — Subgrupo Centro-Oeste: porte e modalidade')
+# SEU CÓDIGO AQUI
+# dfCO = dfUnidade.filter(like='CO', axis=0) # usar o filter procura o like em QUALQUER posicao da string do index
+dfCO = dfUnidade[dfUnidade.index.str.startswith("CO")] # usando o str e startwith ele é mais claro e busca no inivio
 
-# # SEU CÓDIGO AQUI
+qtd_ubs = dfCO.shape[0] #igual a len(). size faz a matriz
+freq_port = dfCO['porte'].value_counts()
+freq_modlaidade = dfCO['modalidade'].value_counts()
 
+print(qtd_ubs)
+print(freq_port)
+print(freq_modlaidade)
 
 # # -----------------------------------------------------------------------------
 # # D3.b) Usando dfAtendimento.loc[dfCO.index], calcule as médias de todas
@@ -499,9 +526,14 @@ print('==============================================')
 # #        Mostre a diferença absoluta entre as duas médias (CO - geral).
 # # -----------------------------------------------------------------------------
 
-# print('\nD3.b — Médias de atendimento no Centro-Oeste vs. média geral')
+print('\nD3.b — Médias de atendimento no Centro-Oeste vs. média geral')
+# SEU CÓDIGO AQUI
+df = dfAtendimento.loc[dfCO.index]
+df_media = df.mean()
 
-# # SEU CÓDIGO AQUI
+dfAtendimento_media = dfAtendimento.mean()
+diff = df_media - dfAtendimento_media
+print(diff)
 
 
 # # -----------------------------------------------------------------------------
@@ -514,10 +546,22 @@ print('==============================================')
 # #          - a UBS com MAIOR cobertura_pct (usando dfAtendimento.loc[...])
 # # -----------------------------------------------------------------------------
 
-# print('\nD3.c — Nordeste e Sul: modalidade predominante e UBS com maior cobertura')
+print('\nD3.c — Nordeste e Sul: modalidade predominante e UBS com maior cobertura')
+# SEU CÓDIGO AQUI
+dfNE_SL=dfUnidade[dfUnidade.index.str.contains("NE|SL")] #usnado regex pasra criar uma expressao de ou
 
-# # SEU CÓDIGO AQUI
+moda = dfNE_SL.mode()
+print(moda['modalidade'])
+# maior_obs = dfNE_SL['cobertura_pct'].max()
 
+df = pd.merge(dfNE_SL,dfAtendimento, on="ubs_id", how="left")#unindo dois df, mantendo neel apenas os dados que correspondem ao primeiro df, isso é o left join
+
+
+max_cob = df['cobertura_pct'].max()
+
+ubs_big  = df[df['cobertura_pct']==max_cob].index[0]
+
+print(ubs_big)
 
 # # =============================================================================
 # # EXERCÍCIO D4 — apply, map e isin
