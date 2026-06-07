@@ -163,7 +163,9 @@ tabela_freq_qualitativa = pd.DataFrame({
 
 tabela_freq_qualitativa['freq acum'] = tabela_freq_qualitativa['freq abs'].cumsum()
 
-print(tabela_freq_qualitativa)
+tabela_cruzada = pd.crosstab(dfUnidade['porte'], dfUnidade['informatizada'])
+
+print(tabela_cruzada)
 
 #para coluna de dados qualitativos
 # idades = [22, 25, 19, 35, 40, 28, 55, 18, 60, 23]
@@ -567,9 +569,9 @@ print(ubs_big)
 # # EXERCÍCIO D4 — apply, map e isin
 # # =============================================================================
 
-# print('\n==============================================')
-# print('D4 — apply, map e isin')
-# print('==============================================')
+print('\n==============================================')
+print('D4 — apply, map e isin')
+print('==============================================')
 
 # # -----------------------------------------------------------------------------
 # # D4.a) Crie a função classifica_porte que receba um valor de porte e retorne:
@@ -582,9 +584,35 @@ print(ubs_big)
 # #        Mostre a frequência da nova coluna.
 # # -----------------------------------------------------------------------------
 
-# print('\nD4.a — Coluna porte_descritivo com map')
+print('\nD4.a — Coluna porte_descritivo com map')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+def classifica_porte(valor):
+    if valor=='Pequeno':
+        return 'Estrutura Pequena'
+    if valor=='Médio':
+        return 'Estrutura Média'
+    if valor=='Grande':
+        return 'Estrutura Ampliada'
+
+dfUnidade['porte_descritivo'] = dfUnidade['porte'].apply(classifica_porte) #funciona em series e df inteiros.; nao aceita dic. deixa passar mais de 1 arg pra funcao com args=()
+
+#criamos a função pq o enunciado pediu, mas seria mais eficiente criar o mapeamento com dic e aplicar o map
+
+dic_porte_map = {
+    'Pequeno': 'Estrutura Pequena',
+    'Médio': 'Estrutura Média',
+    'Grande': 'Estrutura Ampliada'
+}
+
+dfUnidade['porte_descritivo'] = dfUnidade['porte'].map(dic_porte_map) #funciona em series, ou colunas de df. aceida dic
+
+print(dfUnidade['porte_descritivo'])
+
+'''
+Vai substituir valores exatos (A vira B)? Use um dicionário com .map().
+A lógica é complexa e precisa de cálculos, texto dinâmico ou recebe parâmetros extras? Use uma função com .apply().
+'''
 
 
 # # -----------------------------------------------------------------------------
@@ -598,9 +626,25 @@ print(ubs_big)
 # #        (use pd.concat e groupby)
 # # -----------------------------------------------------------------------------
 
-# print('\nD4.b — Capitais nordestinas: consultas e cobertura por município')
+print('\nD4.b — Capitais nordestinas: consultas e cobertura por município')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+l_mun = ['Fortaleza', 'Salvador', 'Recife', 'Natal'] 
+
+dfNordesteCap = dfUnidade[dfUnidade['municipio'].isin(l_mun)]
+
+df_compl = pd.concat([dfNordesteCap, dfAtendimento.loc[dfNordesteCap.index]], axis=1)
+'''
+axis=1: DataFrame original -> + <- DataFrame novo = DataFrame mais largo (juntou informações do mesmo estabelecimento).
+axis=0: DataFrame original no topo + DataFrame novo embaixo = DataFrame mais comprido (dobrou o número de linhas, gerando os NaN).
+'''
+
+df_compl_grp =df_compl.groupby('municipio').agg({
+    'consultas_medicas': 'mean',
+    'cobertura_pct': 'mean'
+})
+
+print(df_compl_grp)
 
 
 # # -----------------------------------------------------------------------------
@@ -617,9 +661,41 @@ print(ubs_big)
 # #        Mostre a frequência de categoria_produtividade.
 # # -----------------------------------------------------------------------------
 
-# print('\nD4.c — Coluna produtividade_total e categoria_produtividade com apply')
+print('\nD4.c — Coluna produtividade_total e categoria_produtividade com apply')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+def produtividade_total(linha):
+    a = linha['consultas_medicas']
+    b = linha['consultas_enfermagem']
+    c = linha['visitas_domiciliares']
+
+    return a+b+c
+
+dfAtendimento['produtividade_total'] = dfAtendimento.apply(produtividade_total, axis=1)
+
+def categoria_produtividade(linha):
+    pt = linha['produtividade_total']
+    if pt>700:
+        return 'Alta'
+    elif pt>400:
+        return 'Media'
+    else:
+        return 'Baixa'
+
+'''
+poderia usar o cut, se nao fosse especificado para usar o aplly
+
+bins = [0,400,700,float('inf')]
+labels = ['Alta','Media','Baixa']
+
+dfAtendimento['categoria_produtividade'] = pd.cut(dfAtendimento['produtividade_total'], bins=bins, labels=labels)
+'''
+
+dfAtendimento['categoria_produtividade'] = dfAtendimento.apply(categoria_produtividade, axis=1)
+
+freq_abss = dfAtendimento['categoria_produtividade'].value_counts()
+
+print(freq_abss)
 
 
 # # =============================================================================
@@ -630,9 +706,9 @@ print(ubs_big)
 # # EXERCÍCIO VD1 — groupby + transform + filtros condicionais encadeados
 # # =============================================================================
 
-# print('\n==============================================')
-# print('VD1 — transform, medianas por grupo e filtros encadeados')
-# print('==============================================')
+print('\n==============================================')
+print('VD1 — transform, medianas por grupo e filtros encadeados')
+print('==============================================')
 
 # # -----------------------------------------------------------------------------
 # # VD1.a) Concatene dfUnidade['modalidade'] com dfAtendimento em dfAux.
@@ -650,10 +726,18 @@ print(ubs_big)
 # #         groupby('modalidade')['acima_mediana_modal'].value_counts().
 # # -----------------------------------------------------------------------------
 
-# print('\nVD1.a — Mediana de cobertura por modalidade via transform e flag acima_mediana_modal')
+print('\nVD1.a — Mediana de cobertura por modalidade via transform e flag acima_mediana_modal')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+dfAux = pd.concat([dfUnidade['modalidade'], dfAtendimento], axis=1)
 
+dfAux['mediana_cobertura_por_modalidade'] = dfAux.groupby('modalidade')['cobertura_pct'].transform('median')
+
+dfAux['acima_mediana_modal'] = dfAux['cobertura_pct']>dfAux['mediana_cobertura_por_modalidade']
+
+freq = dfAux.groupby('modalidade')['acima_mediana_modal'].value_counts()
+
+print(freq)
 
 # # -----------------------------------------------------------------------------
 # # VD1.b) Entre as UBS com acima_mediana_modal == True,
@@ -664,9 +748,28 @@ print(ubs_big)
 # #         Mostre também a média de absenteismo_pct dessas UBS por modalidade.
 # # -----------------------------------------------------------------------------
 
-# print('\nVD1.b — UBS acima da mediana modal E com equipe incompleta: contagem e absenteísmo')
+print('\nVD1.b — UBS acima da mediana modal E com equipe incompleta: contagem e absenteísmo')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+
+dfGestao.loc[dfAux['acima_mediana_modal']==True]
+
+ubs_acima_meadiana = dfAux.index[dfAux['acima_mediana_modal']==True]
+condicao_equipe = dfGestao['equipe_incompleta']=='SIM'
+
+def_res1 = dfGestao.loc[dfGestao.index.isin(ubs_acima_meadiana) & condicao_equipe]
+
+def_res2 = dfAux.loc[dfAux.index.isin(ubs_acima_meadiana) & condicao_equipe]
+
+df_comp = pd.concat([def_res1, def_res2], axis=1)
+
+def_res3= df_comp.groupby('modalidade')['acima_mediana_modal'].count()
+
+def_res4 = df_comp.groupby('modalidade').agg({
+    'absenteismo_pct': 'mean'
+})
+
+print(def_res4)
 
 
 # # -----------------------------------------------------------------------------
@@ -677,18 +780,30 @@ print(ubs_big)
 # #         Resultado esperado: uma série com a % por região (de 0 a 100).
 # # -----------------------------------------------------------------------------
 
-# print('\nVD1.c — % de UBS acima da mediana regional de consultas médicas')
+print('\nVD1.c — % de UBS acima da mediana regional de consultas médicas')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+dfCompleto_a = dfCompleto.copy()
 
+dfCompleto_a['mediana'] = dfCompleto_a.groupby('regiao')['consultas_medicas'].transform('median')
+
+dfCompleto_a['marcacao'] = dfCompleto_a['consultas_medicas']>dfCompleto_a['mediana']
+
+dfCompleto_b = dfCompleto_a.groupby('regiao').agg({
+    'marcacao':'mean'
+})
+
+dfCompleto_b = dfCompleto_b['marcacao'] * 100
+
+print(dfCompleto_b)
 
 # # =============================================================================
 # # EXERCÍCIO VD2 — Score composto de vulnerabilidade e pivot_table
 # # =============================================================================
 
-# print('\n==============================================')
-# print('VD2 — Score de vulnerabilidade e pivot_table')
-# print('==============================================')
+print('\n==============================================')
+print('VD2 — Score de vulnerabilidade e pivot_table')
+print('==============================================')
 
 # # -----------------------------------------------------------------------------
 # # VD2.a) Em dfGestao, crie a coluna score_vulnerabilidade somando pontos:
@@ -704,10 +819,29 @@ print(ubs_big)
 # #         Mostre a frequência de cada valor de score_vulnerabilidade.
 # # -----------------------------------------------------------------------------
 
-# print('\nVD2.a — Score de vulnerabilidade operacional (0–7)')
+print('\nVD2.a — Score de vulnerabilidade operacional (0–7)')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+def soma_points(linha):
+    cont = 0 
+    if linha['abastecimento_regular']=='NÃO':
+        cont+=1
+    if linha['equipe_incompleta']=='SIM':
+        cont+=1
+    if linha['superlotacao_pontual']=='SIM':
+        cont+=1
+    if linha['desabastecimento_critico']=='SIM':
+        cont+=1
+    if linha['prontuario_eletronico']=='NÃO':
+        cont+=1
+    if linha['absenteismo_pct']>20:
+        cont+=2
+    return cont
 
+dfGestao['score_vulnerabilidade'] = dfGestao.apply(soma_points, axis=1)
+
+freq = dfGestao['score_vulnerabilidade'].value_counts()
+print(freq)
 
 # # -----------------------------------------------------------------------------
 # # VD2.b) Crie a coluna categoria_vulnerabilidade com base no score:
@@ -721,9 +855,19 @@ print(ubs_big)
 # #         Faça um gráfico de barras horizontais com essa frequência.
 # # -----------------------------------------------------------------------------
 
-# print('\nVD2.b — Categorias de vulnerabilidade e gráfico')
+print('\nVD2.b — Categorias de vulnerabilidade e gráfico')
+# SEU CÓDIGO AQUI
 
-# # SEU CÓDIGO AQUI
+bins = [0,1,3,5,7]
+labels = ['Baixa vulnerabilidade','Vulnerabilidade moderada','Alta vulnerabilidade','Vulnerabilidade crítica']
+
+dfGestao['categoria_vulnerabilidade'] = pd.cut(dfGestao['score_vulnerabilidade'], bins=bins, labels=labels,include_lowest=True)
+
+freq = dfGestao['categoria_vulnerabilidade'].value_counts()
+freq.plot(kind='barh')
+
+plt.show()
+print(freq)
 
 
 # # -----------------------------------------------------------------------------
@@ -738,9 +882,8 @@ print(ubs_big)
 # #         os totais de coluna usando .mean(axis=0) e exiba tudo junto.
 # # -----------------------------------------------------------------------------
 
-# print('\nVD2.c — Pivot: score médio por categoria de vulnerabilidade x modalidade')
-
-# # SEU CÓDIGO AQUI
+print('\nVD2.c — Pivot: score médio por categoria de vulnerabilidade x modalidade')
+# SEU CÓDIGO AQUI
 
 
 # # =============================================================================
